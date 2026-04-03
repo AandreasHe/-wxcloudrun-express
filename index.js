@@ -17,6 +17,26 @@ app.get("/", async (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
+// 健康检查
+app.get("/api/health", async (req, res) => {
+  try {
+    res.send({
+      code: 0,
+      data: {
+        ok: true,
+        message: "health check success",
+        time: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    res.status(500).send({
+      code: -1,
+      message: "health check failed",
+      error: error.message,
+    });
+  }
+});
+
 // 更新计数
 app.post("/api/count", async (req, res) => {
   const { action } = req.body;
@@ -46,7 +66,13 @@ app.get("/api/count", async (req, res) => {
 app.get("/api/wx_openid", async (req, res) => {
   if (req.headers["x-wx-source"]) {
     res.send(req.headers["x-wx-openid"]);
+    return;
   }
+
+  res.status(400).send({
+    code: -1,
+    message: "Not called from WeChat container",
+  });
 });
 
 const port = process.env.PORT || 80;
